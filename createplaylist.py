@@ -1,6 +1,4 @@
-
-
-
+#Created by WilliamOtieno
 
 #1 Log into YouTube
 #2 Grab our liked videos
@@ -11,7 +9,13 @@
 import json
 import requests
 import os
+
+
 from secrets import spotify_user_id, spotify_token
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
+import googleapiclient.errors
+import youtube_dl
 
 class CreatePlaylist:
 
@@ -24,6 +28,22 @@ class CreatePlaylist:
     #1 Log into YouTube
     def get_youtube_client(self):
         #Copied from youtube data api
+        #Disable OAuthlib's HTTPS verification when running locally
+        os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
+        api.service_name = "youtube"
+        api_version = "v3"
+        client_secrets_file = "client_secrets.json"
+
+        #Get credentials and create an API client
+        scopes = ["https://www.googleapis.com/auth/youtube.readonly"]
+        flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(client_secrets_file, scopes)
+        credentials = flow.run_console()
+
+        # from the Youtube data API
+        youtube_client = googleapiclient.discovery.build(api_service_name, api_version, credentials = credentials)
+
+        return youtube_client
 
     #2 Grab our liked videos
     def get_liked_vides(self):
@@ -36,7 +56,11 @@ class CreatePlaylist:
         # collect each video and get important info
         for item in response["item"]:
             video_title = item["snippet"]["title"]
-            youtube_url = "".format(item["id"])
+            youtube_url = "https://youtube.com/watch?v={}".format(item["id"])
+
+            # use youtube_dl to collect the song name and artist name
+            video = youtube_dl.YoutubeDL
+
 
     #3 Create a new playlist
     def create_playlist(self):
